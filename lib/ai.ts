@@ -18,12 +18,14 @@ export class AiError extends Error {
   }
 }
 
-let modelCache: { name: string; at: number } | null = null;
+let modelCache: { names: string[]; at: number } | null = null;
+const FALLBACK = "gemini-2.5-flash";
 
-/** Picks the newest Gemini Flash model available to this key (cached 6 h). */
-export async function pickModel(): Promise<string> {
-  if (process.env.GEMINI_MODEL) return process.env.GEMINI_MODEL;
-  if (modelCache && Date.now() - modelCache.at < 6 * 3600_000) return modelCache.name;
+/** The newest Gemini Flash models available to this key, newest first (cached 6 h).
+ *  The newest one is often overloaded, so callers fall back down this list. */
+export async function pickModels(): Promise<string[]> {
+  const pinned = process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : [];
+  if (modelCache && Date.now() - modelCache.at < 6 * 3600_000) return [...new Set([...pinned, ...modelCache.names])];
   try {
     const r = await fetch(`${BASE}/v1beta/models?pageSize=200`, { headers: { "x-goog-api-key": key() } });
     const j = (await r.json()) as { models?: { name: string; supportedGenerationMethods?: string[] }[] };
@@ -33,14 +35,18 @@ export async function pickModel(): Promise<string> {
       .map((m) => ({ ...m, v: parseFloat(m.id.split("-")[1]), preview: m.id.includes("preview") }))
       .sort((a, b) => b.v - a.v || Number(a.preview) - Number(b.preview));
     if (flash[0]) {
-      modelCache = { name: flash[0].id, at: Date.now() };
-      return flash[0].id;
+      const names = [...new Set([...flash.slice(0, 3).map((m) => m.id), FALLBACK])];
+      modelCache = { names, at: Date.now() };
+      return [...new Set([...pinned, ...names])];
     }
   } catch (e) {
     console.error("[ai] model list failed", e);
   }
-  return "gemini-2.5-flash";
+  return [...new Set([...pinned, FALLBACK])];
 }
+
+/** Overloaded, rate-limited or briefly down: worth trying another model. */
+const BUSY = /high demand|overloaded|try again later|resource.?exhausted|quota|rate limit|HTTP (429|5\d\d)/i;
 
 const CLIP_SCHEMA = {
   type: "OBJECT",
@@ -88,7 +94,7 @@ Sort clips by score, highest first. Clips must not overlap.`;
 type Raw = { title: string; duration: number; summary: string; clips: (Omit<Clip, "id" | "captions"> & { captions: Caption[] })[] };
 
 async function generate(parts: unknown[], timeline: "absolute" | "script"): Promise<Analysis> {
-  const model = await pickModel();
+  const models = await pickModels();
   const body = {
     contents: [{ role: "user", parts }],
     generationConfig: {
@@ -99,28 +105,37 @@ async function generate(parts: unknown[], timeline: "absolute" | "script"): Prom
     },
   };
   let lastErr: unknown;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const r = await fetch(`${BASE}/v1beta/models/${model}:generateContent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": key() },
-        body: JSON.stringify(body),
-      });
-      const j = await r.json();
-      if (!r.ok) {
-        const msg: string = j?.error?.message ?? `HTTP ${r.status}`;
-        if (/private|unavailable|not.*(found|accessible)|invalid.*(url|uri)|cannot.*access/i.test(msg)) throw new AiError("bad_source", "We couldn't open this video. Make sure it's public on YouTube.");
-        if (/too long|exceeds|token count|context/i.test(msg)) throw new AiError("too_long", "This video is too long for one pass. Try one under 3 hours.");
-        throw new AiError("ai_failed", msg);
+  // each model gets up to 2 tries; a busy model is skipped right away for the next one
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await fetch(`${BASE}/v1beta/models/${model}:generateContent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": key() },
+          body: JSON.stringify(body),
+        });
+        const j = await r.json().catch(() => null);
+        if (!r.ok) {
+          const msg: string = j?.error?.message ?? `HTTP ${r.status}`;
+          if (r.status === 429 || r.status >= 500 || BUSY.test(msg)) throw new AiError("busy", `${model}: ${msg}`);
+          if (/private|unavailable|not.*(found|accessible)|invalid.*(url|uri)|cannot.*access/i.test(msg)) throw new AiError("bad_source", "We couldn't open this video. Make sure it's public on YouTube.");
+          if (/too long|exceeds|token count|context/i.test(msg)) throw new AiError("too_long", "This video is too long for one pass. Try one under 3 hours.");
+          throw new AiError("ai_failed", msg);
+        }
+        const text: string | undefined = j?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("");
+        if (!text) throw new AiError("ai_failed", "Empty answer from the AI");
+        return normalize(JSON.parse(text) as Raw, timeline);
+      } catch (e) {
+        lastErr = e;
+        if (e instanceof AiError && (e.code === "bad_source" || e.code === "too_long" || e.code === "missing_key")) throw e;
+        if (e instanceof AiError && e.code === "busy") {
+          console.warn("[ai] busy, trying next model:", e.message);
+          break;
+        }
       }
-      const text: string | undefined = j?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("");
-      if (!text) throw new AiError("ai_failed", "Empty answer from the AI");
-      return normalize(JSON.parse(text) as Raw, timeline);
-    } catch (e) {
-      lastErr = e;
-      if (e instanceof AiError && (e.code === "bad_source" || e.code === "too_long" || e.code === "missing_key")) throw e;
     }
   }
+  if (lastErr instanceof AiError && lastErr.code === "busy") throw new AiError("ai_failed", lastErr.message);
   throw lastErr instanceof AiError ? lastErr : new AiError("ai_failed", String(lastErr));
 }
 
