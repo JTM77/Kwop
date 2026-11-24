@@ -34,7 +34,7 @@ test("try-first funnel, end to end", async ({ page }) => {
   // checkout sheet opens inside the page (never pay)
   await page.getByRole("button", { name: /^Continue with / }).first().click();
   await expect(page.getByRole("dialog", { name: "Checkout" })).toBeVisible();
-  await expect(page.locator("#whop-checkout iframe, text=Payments open in a moment")).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator("#whop-checkout iframe").or(page.getByText("Payments open in a moment"))).toBeVisible({ timeout: 20_000 });
   await page.getByRole("dialog", { name: "Checkout" }).getByRole("button", { name: "Close" }).click();
   await page.getByRole("dialog", { name: "Choose your plan" }).getByRole("button", { name: "Close" }).click();
 

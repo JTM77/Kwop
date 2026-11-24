@@ -406,6 +406,7 @@ function CheckoutSheet({ target, onClose, onPaid }: { target: { plan: Plan; peri
     const timers: ReturnType<typeof setTimeout>[] = [];
     setState("loading");
     const show = () => { if (!dead && !shown) { shown = true; setState("ready"); } };
+    let fallback: string | null = null;
     (async () => {
       try {
         const r = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: target.plan.id, period: target.period }) });
@@ -414,6 +415,9 @@ function CheckoutSheet({ target, onClose, onPaid }: { target: { plan: Plan; peri
         const j = await r.json();
         if (!r.ok) { setState("error"); return; }
         if (!j.embed) { if (j.fallback_url) location.href = j.fallback_url; else setState("error"); return; }
+        fallback = j.fallback_url ?? null;
+        // whatever happens below (blocked script, slow iframe), the buyer reaches a checkout within 15 s
+        timers.push(setTimeout(() => { if (!shown && !dead && fallback) location.href = fallback; }, 15000));
         await loadWhop();
         if (dead || !window.WhopElements) return;
         const c = window.WhopElements().checkout.create({
@@ -429,9 +433,10 @@ function CheckoutSheet({ target, onClose, onPaid }: { target: { plan: Plan; peri
         ck.current = c;
         c.create("checkout").mount("#whop-checkout");
         timers.push(setTimeout(() => { if (document.querySelector("#whop-checkout iframe")) show(); }, 2000));
-        timers.push(setTimeout(() => { if (!shown && !dead && j.fallback_url) location.href = j.fallback_url; }, 15000));
       } catch {
-        if (!dead) setState("error");
+        // Whop's script blocked (ad blocker, privacy browser): use the hosted checkout page instead
+        if (!dead && fallback) location.href = fallback;
+        else if (!dead) setState("error");
       }
     })();
     return () => {
