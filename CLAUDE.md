@@ -150,3 +150,11 @@ Session 2 (2026-11-24):
 - (History) KWOP_API candidates that are NOT it: business id `biz_f68pDVyF8dvyQc` (no path answers), `https://kwop.io/vidflow` (the public Kwop landing page), `/api/v2/pub/vidflow` (Kwop page's public browser API, POST only; no GET plans, no /plan?email). Need the private server API link from the Kwop dashboard. Google sign-in (step 2) not started.
 
 Blocker hit in the first cloud session: the network-proxy credentials for api.supabase.com / api.vercel.com were rejected ("JWT could not be decoded" / invalidToken) even after fresh tokens. Next session: the owner adds SUPABASE_ACCESS_TOKEN / VERCEL_TOKEN / GEMINI_API_KEY as environment variables of the "kwop" environment (from a computer: claude.ai/code → kwop → Edit). Use them directly (Supabase Management API + `npx vercel --token $VERCEL_TOKEN`). The owner is on a phone often and finds manual steps too long: do everything yourself, ask only for what is unavoidable.
+
+## Social posting (set up 2026-11-24)
+Videos are made by the owner in HeyGen (9:16, 1080×1920, MP4, < 60 s) and sent in chat. Claude writes captions per platform, shows them, and posts ONLY after the owner says go.
+- Through Composio (connected accounts, use the account id explicitly — another project's Instagram is also connected):
+  - Instagram **@vidflow2026** (Business, IG user id 29552152114409859) → Composio account `instagram_resift-roka`. Reels: INSTAGRAM_POST_IG_USER_MEDIA (video_file, media_type REELS) → INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH. Limit 50 posts / 24 h. NEVER use `instagram_dimmet-varied` (@veneer.ai, a different project).
+  - YouTube channel **VIDFLOW** (@vidflow-t6s, UCS5LzX-xs65LFf1s-ldN28w) → Composio account `youtube_lile-ruin`. Shorts: YOUTUBE_MULTIPART_UPLOAD_VIDEO (add #Shorts to title/description). First upload: post private first to confirm it isn't locked, then make public.
+- TikTok: Composio has no managed TikTok auth (needs the owner's own TikTok developer app) → owner posts TikTok by hand (Claude sends the video + caption) or via TikTok Studio scheduling. Paid alternative if needed: Postiz.
+- Higgsfield: owner did not buy (too expensive); free account, 10 credits.
