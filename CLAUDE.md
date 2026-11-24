@@ -122,7 +122,7 @@ Done (steps 0–4, most of 6–9 in code):
 - B-roll source: Wikimedia Commons (free, CC-licensed, no key, CORS-enabled) instead of a paid stock API.
 
 Remaining (in order):
-1. Supabase: create project "vidflow" (US East), push supabase/migrations via the Management API `POST /v1/projects/{ref}/database/query`, set auth config (mailer_autoconfirm true, site_url, uri_allow_list), put URL/anon/service keys in .env.local.
+1. Supabase: the owner ALREADY created project "vidflow" (East US) by hand, ran supabase/migrations/20261124000000_init.sql in the SQL editor, and turned "Confirm email" off. Do NOT create another project: find it with GET /v1/projects (name vidflow), read its keys (GET /v1/projects/{ref}/api-keys), set site_url / uri_allow_list via PATCH /v1/projects/{ref}/config/auth, put URL/anon/service keys in .env.local.
 2. Google sign-in steps to the owner (redirect URI https://<ref>.supabase.co/auth/v1/callback), then enable via the Management API and set NEXT_PUBLIC_GOOGLE_ENABLED=1.
 3. Verification loop on sign-up/funnel/app with screenshots (scripts/shot.mjs), e2e (tests/e2e.spec.ts, `npx playwright test --trace off`) × 3 on phone + computer.
 4. Premium pass, Lighthouse 95+.
@@ -130,4 +130,4 @@ Remaining (in order):
 6. Live test, then POST KWOP_API/connect {"url": "<https://vidflow….vercel.app>"} and check https://kwop.io/vidflow/app.
 7. Security pass (RLS check with a second user, no secrets in .next/static, input validation).
 
-Blocker hit in the first cloud session: the network-proxy credentials for api.supabase.com / api.vercel.com were rejected ("JWT could not be decoded" / invalidToken) even after fresh tokens. Next session: if the environment has SUPABASE_ACCESS_TOKEN / VERCEL_TOKEN / GEMINI_API_KEY variables, use them directly.
+Blocker hit in the first cloud session: the network-proxy credentials for api.supabase.com / api.vercel.com were rejected ("JWT could not be decoded" / invalidToken) even after fresh tokens. Next session: the owner adds SUPABASE_ACCESS_TOKEN / VERCEL_TOKEN / GEMINI_API_KEY as environment variables of the "kwop" environment (from a computer: claude.ai/code → kwop → Edit). Use them directly (Supabase Management API + `npx vercel --token $VERCEL_TOKEN`). The owner is on a phone often and finds manual steps too long: do everything yourself, ask only for what is unavoidable.
