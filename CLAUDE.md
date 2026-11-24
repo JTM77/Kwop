@@ -130,4 +130,10 @@ Remaining (in order):
 6. Live test, then POST KWOP_API/connect {"url": "<https://vidflow….vercel.app>"} and check https://kwop.io/vidflow/app.
 7. Security pass (RLS check with a second user, no secrets in .next/static, input validation).
 
+Session 2 (2026-11-24):
+- Network secret for api.supabase.com re-saved and WORKS. The owner's project is named **"Kwop"** (ref `jccipwrgcorftmxcgsfn`, eu-west-1), not "vidflow"; it has the Vidflow migration (profiles, projects, analysis_cache, RLS on). Use it.
+- Keys written to `.env.local` (gitignored). Build, typecheck, lint pass; service key not in .next/static. Landing/login/signup screenshots: no console errors.
+- Supabase auth config is still WRONG and was not changed (needs the owner's OK): `external_email_enabled=false` (email sign-up off!), `mailer_autoconfirm=false` (confirm email still on), site_url localhost, empty uri_allow_list. Fix: PATCH /config/auth {"external_email_enabled":true,"mailer_autoconfirm":true,"uri_allow_list":"http://localhost:3000/**,<prod>/**"}.
+- Still missing in this session: api.vercel.com secret is rejected (invalidToken); GEMINI_API_KEY only arrives in a session STARTED on the "kwop" environment; **KWOP_API URL is not stored anywhere** (needs the owner, or it is in Kwop's dashboard).
+
 Blocker hit in the first cloud session: the network-proxy credentials for api.supabase.com / api.vercel.com were rejected ("JWT could not be decoded" / invalidToken) even after fresh tokens. Next session: the owner adds SUPABASE_ACCESS_TOKEN / VERCEL_TOKEN / GEMINI_API_KEY as environment variables of the "kwop" environment (from a computer: claude.ai/code → kwop → Edit). Use them directly (Supabase Management API + `npx vercel --token $VERCEL_TOKEN`). The owner is on a phone often and finds manual steps too long: do everything yourself, ask only for what is unavoidable.
