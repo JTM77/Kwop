@@ -36,7 +36,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
   return (
     <UnlockProvider initialMe={{ id: null, email: null, paid: false, tier: "free", plan: null, until: null, status: null }}>
-      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="afterInteractive" />
+      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="lazyOnload" />
       <Nav />
       <main className="overflow-x-clip">
         {/* HERO: the product's first step, working for real */}
@@ -46,7 +46,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
           <div className="relative mx-auto max-w-[1120px] px-5">
             <div className="grid items-center gap-12 md:grid-cols-[1.25fr_1fr]">
               <div className="text-center md:text-left">
-                <Reveal>
+                {/* no JS fade on the hero text: it is the first thing people (and the LCP) see */}
+                <div className="hero-in">
                   <SectionLabel>AI clips for faceless creators</SectionLabel>
                   <h1 className="title-xl mt-5 text-[44px] text-white sm:text-[56px] md:text-[76px]">
                     1 podcast in.<br />30 faceless TikToks out.
@@ -55,7 +56,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
                   <p className="mx-auto mt-5 max-w-[520px] text-[17px] leading-relaxed text-white/70 md:mx-0 md:text-[19px]">
                     Paste a long video. Vidflow finds the <b className="text-white">viral moments</b> and adds <b className="text-white">kinetic captions</b> and b-roll for you.
                   </p>
-                </Reveal>
+                </div>
                 <div className="mt-8 md:max-w-[600px]">
                   <TryFlowSlot initial={initial} autoUnlock={!!sp.unlock} />
                 </div>

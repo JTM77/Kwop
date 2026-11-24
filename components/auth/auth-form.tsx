@@ -2,9 +2,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { supabaseBrowser } from "@/lib/supabase/client";
 import { MainButton } from "@/components/ui/main-button";
 import { cn } from "@/lib/utils";
+
+// The Supabase client (~66 KB) loads only when someone actually signs up or logs in,
+// not with the landing page.
+const loadSb = () => import("@/lib/supabase/client").then((m) => m.supabaseBrowser());
 
 export const GOOGLE_ON = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "1";
 
@@ -47,7 +50,7 @@ export function AuthForm({
     if (!/^\S+@\S+\.\S+$/.test(email)) return setErr({ field: "email", text: "That email doesn't look right." });
     if (password.length < 6) return setErr({ field: "password", text: "Use at least 6 characters." });
     setBusy(true);
-    const sb = supabaseBrowser();
+    const sb = await loadSb();
     try {
       if (m === "signup") {
         const { data, error } = await sb.auth.signUp({ email, password });
@@ -70,7 +73,7 @@ export function AuthForm({
   }
 
   async function google() {
-    const sb = supabaseBrowser();
+    const sb = await loadSb();
     await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}` } });
   }
 

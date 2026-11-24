@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Heart, MessageCircle, Share, Bookmark, Music2 } from "lucide-react";
-import { useReducedMotion } from "framer-motion";
+import { useInView, useReducedMotion } from "framer-motion";
+import { useAfterLoad, useClock } from "@/lib/use-clock";
 import { Phone } from "@/components/ui/phone";
 import { KineticCaptions } from "@/components/ui/kinetic";
 import type { Caption } from "@/lib/captions";
@@ -54,20 +55,20 @@ function Scene({ i, t }: { i: number; t: number }) {
 
 export function DemoPhone({ className }: { className?: string }) {
   const reduce = useReducedMotion();
-  const [t, setT] = useState(reduce ? 3.6 : 0);
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.2 });
+  const loaded = useAfterLoad();
+  const live = !reduce && loaded && inView;
+  const [t] = useClock({ active: live, fps: 15, loop: LOOP, from: 3.6 });
   const [views, setViews] = useState(48200);
   useEffect(() => {
-    if (reduce) return;
-    const t0 = performance.now();
-    let raf = 0;
-    const tick = (n: number) => { setT(((n - t0) / 1000) % LOOP); raf = requestAnimationFrame(tick); };
-    raf = requestAnimationFrame(tick);
-    const v = setInterval(() => setViews((x) => x + Math.floor(37 + Math.random() * 140)), 420);
-    return () => { cancelAnimationFrame(raf); clearInterval(v); };
-  }, [reduce]);
+    if (!live) return;
+    const v = setInterval(() => setViews((x) => x + Math.floor(80 + Math.random() * 300)), 900);
+    return () => clearInterval(v);
+  }, [live]);
   const scene = t < 3 ? 0 : t < 6 ? 1 : 2;
   return (
-    <div className={className}>
+    <div className={className} ref={ref}>
       <Phone className="w-[262px] md:w-[290px]">
         <div className="absolute inset-0"><Scene i={scene} t={t} /></div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />

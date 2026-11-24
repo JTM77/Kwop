@@ -20,7 +20,7 @@ export default async function Page({ params }: P) {
   if (!c) notFound();
   return (
     <div className="relative grid min-h-dvh place-items-center overflow-hidden px-5 py-16">
-      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="afterInteractive" />
+      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="lazyOnload" />
       <div className="dot-grid pointer-events-none absolute inset-0" />
       <div className="relative w-full max-w-[560px] text-center">
         <Link href="/" className="inline-flex"><Logo /></Link>

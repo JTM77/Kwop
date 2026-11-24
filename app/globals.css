@@ -118,3 +118,8 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* hero text: a CSS-only rise (no opacity, so it paints at once and LCP isn't held back by JS) */
+@keyframes hero-rise { from { transform: translateY(14px); } to { transform: none; } }
+.hero-in { animation: hero-rise .5s cubic-bezier(.22,.8,.24,1) both; }
+@media (prefers-reduced-motion: reduce) { .hero-in { animation: none; } }

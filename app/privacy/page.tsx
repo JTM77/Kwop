@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy", description: "What Vidflow
 export default function Page() {
   return (
     <Legal title="Privacy" updated="November 24, 2026">
-      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="afterInteractive" />
+      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="lazyOnload" />
       <p>Short version: we keep what we need to make your clips, nothing more, and we never sell it.</p>
       <h2>What we keep</h2>
       <p>Your email and login, your settings (caption style, brand color), the links or scripts you submit, the clips the AI found (titles, timings, captions) and your usage (how many videos this month). For free tries without an account we keep a random device id and a hashed IP to limit tries.</p>

@@ -8,5 +8,5 @@ export const metadata: Metadata = { title: "Log in", description: "Log in to Vid
 
 export default async function Page() {
   if (await getUser()) redirect("/dashboard");
-  return (<><Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="afterInteractive" /><AuthPage mode="login" /></>);
+  return (<><Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="lazyOnload" /><AuthPage mode="login" /></>);
 }

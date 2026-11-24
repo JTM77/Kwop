@@ -30,11 +30,15 @@ export function Vsl({ hasVideo }: { hasVideo: boolean }) {
     if (hasVideo || reduce || !inView || paused) return;
     base.current.at = performance.now();
     let raf = 0;
+    let last = 0;
     const tick = (n: number) => {
       const nt = base.current.t + (n - base.current.at) / 1000;
       if (nt >= TOTAL) { setT(TOTAL - 0.01); base.current.t = TOTAL - 0.01; setPaused(true); return; }
-      setT(nt);
       raf = requestAnimationFrame(tick);
+      // 20 re-renders a second is plenty for captions and scene cuts; keeps the page responsive
+      if (n - last < 50) return;
+      last = n;
+      setT(nt);
     };
     raf = requestAnimationFrame(tick);
     return () => { cancelAnimationFrame(raf); base.current.t = tRef.current; };

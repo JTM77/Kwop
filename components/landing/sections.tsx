@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import { useAfterLoad, useClock } from "@/lib/use-clock";
 import { ArrowRight, Check, ChevronDown, Clock, Captions, Clapperboard, Download, Flame, Link2, Scissors, Sparkles, X } from "lucide-react";
 import { Reveal, Stagger, StaggerItem } from "@/components/ui/reveal";
 import { SectionLabel } from "@/components/ui/label";
@@ -9,18 +10,14 @@ import { KineticCaptions } from "@/components/ui/kinetic";
 import type { Caption } from "@/lib/captions";
 import { cn } from "@/lib/utils";
 
+/** A looping demo clock: 15 fps, only while on screen, only after the page has loaded. */
 function useLoop(len: number) {
   const reduce = useReducedMotion();
-  const [t, setT] = useState(reduce ? len * 0.6 : 0);
-  useEffect(() => {
-    if (reduce) return;
-    const t0 = performance.now();
-    let raf = 0;
-    const f = (n: number) => { setT(((n - t0) / 1000) % len); raf = requestAnimationFrame(f); };
-    raf = requestAnimationFrame(f);
-    return () => cancelAnimationFrame(raf);
-  }, [len, reduce]);
-  return t;
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.15 });
+  const loaded = useAfterLoad(300);
+  const [t] = useClock({ active: !reduce && loaded && inView, fps: 15, loop: len, from: reduce ? len * 0.6 : 0 });
+  return [t, ref] as const;
 }
 
 /* ───────── The problem (light) ───────── */
@@ -62,7 +59,11 @@ function Frame({ children, className }: { children: React.ReactNode; className?:
 }
 
 function StepUpload() {
-  const t = useLoop(5);
+  const [t, ref] = useLoop(5);
+  return <div ref={ref}><StepUploadInner t={t} /></div>;
+}
+
+function StepUploadInner({ t }: { t: number }) {
   const link = "youtube.com/watch?v=podcast-ep12";
   const n = Math.min(link.length, Math.floor(t * 16));
   return (
@@ -79,7 +80,11 @@ function StepUpload() {
 }
 
 function StepGenerate() {
-  const t = useLoop(5);
+  const [t, ref] = useLoop(5);
+  return <div ref={ref}><StepGenerateInner t={t} /></div>;
+}
+
+function StepGenerateInner({ t }: { t: number }) {
   const p = Math.min(1, t / 4);
   return (
     <Frame>
@@ -94,7 +99,11 @@ function StepGenerate() {
 }
 
 function StepExport() {
-  const t = useLoop(5);
+  const [t, ref] = useLoop(5);
+  return <div ref={ref}><StepExportInner t={t} /></div>;
+}
+
+function StepExportInner({ t }: { t: number }) {
   return (
     <Frame>
       <div className="flex h-full items-center gap-4">
@@ -148,7 +157,11 @@ const CAPS: Caption[] = [
 ];
 
 function LoopFinder() {
-  const t = useLoop(6);
+  const [t, ref] = useLoop(6);
+  return <div ref={ref}><LoopFinderInner t={t} /></div>;
+}
+
+function LoopFinderInner({ t }: { t: number }) {
   const rows = [{ s: 94, l: "The 5-minute habit" }, { s: 88, l: "Why most people quit" }, { s: 81, l: "My worst money mistake" }];
   return (
     <div className="space-y-2">
@@ -164,7 +177,11 @@ function LoopFinder() {
 }
 
 function LoopCaptions() {
-  const t = useLoop(4.6);
+  const [t, ref] = useLoop(4.6);
+  return <div ref={ref}><LoopCaptionsInner t={t} /></div>;
+}
+
+function LoopCaptionsInner({ t }: { t: number }) {
   return (
     <div className="relative mx-auto aspect-[9/12] w-[170px] overflow-hidden rounded-2xl border-2 border-[#222]" style={{ background: "radial-gradient(90% 70% at 50% 20%, #3a1d5c, #0b0b0d)" }}>
       <KineticCaptions captions={CAPS} time={t} styleId="karaoke" size={0.7} className="top-[48%]" />
@@ -173,7 +190,11 @@ function LoopCaptions() {
 }
 
 function LoopBroll() {
-  const t = useLoop(6);
+  const [t, ref] = useLoop(6);
+  return <div ref={ref}><LoopBrollInner t={t} /></div>;
+}
+
+function LoopBrollInner({ t }: { t: number }) {
   const scene = Math.floor(t / 2);
   const bgs = ["linear-gradient(160deg,#0f2027,#2c5364)", "linear-gradient(160deg,#3a1c71,#d76d77)", "linear-gradient(160deg,#134e5e,#71b280)"];
   const kw = ["city night traffic", "money on table", "sunrise mountain"];
@@ -190,7 +211,11 @@ function LoopBroll() {
 }
 
 function LoopExport() {
-  const t = useLoop(5);
+  const [t, ref] = useLoop(5);
+  return <div ref={ref}><LoopExportInner t={t} /></div>;
+}
+
+function LoopExportInner({ t }: { t: number }) {
   const fmts = ["TikTok", "Reels", "Shorts"];
   return (
     <div className="flex items-end justify-center gap-3">

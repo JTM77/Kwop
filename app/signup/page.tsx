@@ -8,5 +8,5 @@ export const metadata: Metadata = { title: "Sign up", description: "Create your 
 
 export default async function Page() {
   if (await getUser()) redirect("/dashboard");
-  return (<><Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="afterInteractive" /><AuthPage mode="signup" /></>);
+  return (<><Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="lazyOnload" /><AuthPage mode="signup" /></>);
 }

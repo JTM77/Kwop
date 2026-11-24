@@ -3,7 +3,7 @@ import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const grotesk = Space_Grotesk({ variable: "--font-grotesk", subsets: ["latin"], display: "swap", weight: ["400", "500", "600", "700"] });
-const jet = JetBrains_Mono({ variable: "--font-jet", subsets: ["latin"], display: "swap", weight: ["400", "500", "700"] });
+const jet = JetBrains_Mono({ variable: "--font-jet", subsets: ["latin"], display: "swap", preload: false, weight: ["400", "500", "700"] });
 
 import { SITE_URL as site } from "@/lib/site";
 

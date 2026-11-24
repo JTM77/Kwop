@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Terms", description: "The simple rul
 export default function Page() {
   return (
     <Legal title="Terms" updated="November 24, 2026">
-      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="afterInteractive" />
+      <Script src="https://kwop.io/flow.js" data-site="s_7eb31daa9a" strategy="lazyOnload" />
       <p>Vidflow turns long videos into short vertical clips with AI. By using it you agree to these terms.</p>
       <h2>Your content</h2>
       <p>Only use videos you own or have the right to use. You keep all rights to your videos and clips. You give Vidflow permission to process them only to make your clips. Vidflow never downloads videos from YouTube: to export a clip, you add your own copy of the video, and it is processed on your device.</p>
