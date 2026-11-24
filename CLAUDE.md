@@ -111,3 +111,23 @@ Next.js App Router + TypeScript + Tailwind + shadcn/ui-style components + framer
 
 ## Verification loop (after every feature)
 npm run dev → scripts/shot.mjs screenshots at 390×844 and 1440×900 → look at them → console must be clean → fix → 3 passes → commit. tests/e2e.spec.ts covers the full funnel (never pays).
+
+---
+
+## Build status (keep this up to date)
+Done (steps 0–4, most of 6–9 in code):
+- Step 0/0b blueprint above; step 0c prices chosen by the owner: **B = Starter $12, Creator $24 (Most popular), Pro $49**, yearly −20 %, saved in Kwop (plan ids 1911/1912/1913).
+- Design system, landing page (try-first hero, motion VSL, sections, footer), funnel (try → work → locked clips → sign-up sheet → paywall → in-page Whop checkout through Kwop → unlock film), app (dashboard, upload with in-browser audio extraction, clip studio with captions/b-roll/export/share, settings, account/billing/cancel/delete), auth pages, legal, share pages + OG images, manifest/icons, error pages, middleware (k/plan/utm cookies), Supabase migration with RLS.
+- Design choice: dark-only app (the niche's loud black look), light #fafafa sections on the landing page for rhythm.
+- B-roll source: Wikimedia Commons (free, CC-licensed, no key, CORS-enabled) instead of a paid stock API.
+
+Remaining (in order):
+1. Supabase: create project "vidflow" (US East), push supabase/migrations via the Management API `POST /v1/projects/{ref}/database/query`, set auth config (mailer_autoconfirm true, site_url, uri_allow_list), put URL/anon/service keys in .env.local.
+2. Google sign-in steps to the owner (redirect URI https://<ref>.supabase.co/auth/v1/callback), then enable via the Management API and set NEXT_PUBLIC_GOOGLE_ENABLED=1.
+3. Verification loop on sign-up/funnel/app with screenshots (scripts/shot.mjs), e2e (tests/e2e.spec.ts, `npx playwright test --trace off`) × 3 on phone + computer.
+4. Premium pass, Lighthouse 95+.
+5. Vercel project "vidflow", env vars (KWOP_API, Supabase keys, GEMINI_API_KEY, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_GOOGLE_ENABLED), production deploy, Supabase site URL/redirects to the production address.
+6. Live test, then POST KWOP_API/connect {"url": "<https://vidflow….vercel.app>"} and check https://kwop.io/vidflow/app.
+7. Security pass (RLS check with a second user, no secrets in .next/static, input validation).
+
+Blocker hit in the first cloud session: the network-proxy credentials for api.supabase.com / api.vercel.com were rejected ("JWT could not be decoded" / invalidToken) even after fresh tokens. Next session: if the environment has SUPABASE_ACCESS_TOKEN / VERCEL_TOKEN / GEMINI_API_KEY variables, use them directly.
