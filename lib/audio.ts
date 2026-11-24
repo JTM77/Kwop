@@ -1,7 +1,8 @@
 "use client";
 // Extracts a small speech-quality audio track from the creator's video, in the browser (ffmpeg.wasm).
 // Only this audio is uploaded for the AI; the video never leaves the device.
-import { FFmpeg, FFFSType } from "@ffmpeg/ffmpeg";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import type { FFFSType } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
 
 let ff: FFmpeg | null = null;
@@ -23,7 +24,7 @@ export async function extractAudio(file: File, onProgress: (p: number) => void):
   f.on("progress", handler);
   try {
     await f.createDir("/in").catch(() => {});
-    await f.mount(FFFSType.WORKERFS, { files: [file] }, "/in");
+    await f.mount("WORKERFS" as FFFSType, { files: [file] }, "/in");
     const input = `/in/${file.name}`;
     let ext: "ogg" | "mp3" = "ogg";
     let code = await f.exec(["-i", input, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "libopus", "-b:a", "16k", "out.ogg"]);

@@ -5,7 +5,7 @@ import "./globals.css";
 const grotesk = Space_Grotesk({ variable: "--font-grotesk", subsets: ["latin"], display: "swap", weight: ["400", "500", "600", "700"] });
 const jet = JetBrains_Mono({ variable: "--font-jet", subsets: ["latin"], display: "swap", weight: ["400", "500", "700"] });
 
-const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+import { SITE_URL as site } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site),
