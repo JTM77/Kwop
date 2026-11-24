@@ -1,11 +1,15 @@
 import { cn } from "@/lib/utils";
+import { BRAND, SLICES } from "@/lib/brand";
 
+/** Vidflow's mark ("Clip Cut"): a play button sliced into three clips, on a black tile. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn("h-7 w-7", className)} aria-hidden>
-      <rect width="32" height="32" rx="9" fill="#c8ff3d" />
-      <path d="M8 9.5h4.2l3.8 10.2 3.8-10.2H24L18 23h-4L8 9.5Z" fill="#060606" />
-      <rect x="21" y="19" width="5" height="5" rx="1.6" fill="#ff3d7f" />
+    <svg viewBox="0 0 64 64" className={cn("h-7 w-7", className)} aria-hidden>
+      <rect width="64" height="64" rx="15" fill="#141416" />
+      <rect x=".75" y=".75" width="62.5" height="62.5" rx="14.25" fill="none" stroke="rgba(255,255,255,.16)" strokeWidth="1.5" />
+      {SLICES.map((p) => (
+        <polygon key={p} points={p} fill={BRAND.lime} stroke={BRAND.lime} strokeWidth="1.6" strokeLinejoin="round" />
+      ))}
     </svg>
   );
 }
