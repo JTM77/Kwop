@@ -194,7 +194,7 @@ export function TryFlow({ initialProject, autoUnlock }: { initialProject?: Publi
   );
 }
 
-function Working() {
+export function Working() {
   const reduce = useReducedMotion();
   const [pct, setPct] = useState(0);
   const [step, setStep] = useState(0);
